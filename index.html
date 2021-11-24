@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>과일 AI</title>
+	<!--link rel="stylesheet" href="https://unpkg.com/mvp.css"/-->
+	<link href="mvp.css" rel="stylesheet" type="text/css" >
+  <!-- sound-->
+<audio id='audio_play' src='soundhg.mp3'></audio> 
+</script>
+
+</head>
+
+<body>
+<div class="content">
+	<div>김해강-과일효능알려주는ai</div>
+  <!--select id="select-lang">
+        <option value="ko-KR">한국어</option>
+        <option value="ja-JP" selected>日本語</option>
+        <option value="en-US">English</option>
+    </select-->
+  <header>
+	<!--button type="button" onclick="init()">시작하기(먼저 눌러주세요)</button-->
+<a href="#none" id="four" class="button"><button type="button" onclick="predict()" onclick="init()">업로드한 사진 판정하기(먼저 이미지를 업로드해주세요)</button></a>
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<div class="file-upload">
+  <button class="file-upload-btn" type="button" 
+  onclick="$('.file-upload-input').trigger( 'click' )" >이미지 업로드</button>
+  <div class="image-upload-wrap">
+    <header>
+      <div class='inputc'>
+    <input class="file-upload-input" type='file' onchange="readURL(this);" accept="image/*" />
+      </div>
+    </header>
+    <div class="drag-text">
+
+      <h3>이미지를 업로드하세요</h3>
+    </div>
+  </div>
+  <div class="file-upload-content">
+    <img class="file-upload-image" id="fruit_image" src="#" alt="이미지가 없습니다" />
+    <div class="image-title-wrap">
+      <button type="button" onclick="removeUpload()" class="remove-image">취소하기 (<span class="image-title">(이 이미지)</span></button>
+    </div>
+  </div>
+  </header>
+
+<div id="webcam-container"></div>
+<div id="label-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+<script>function readURL(input) {
+  if (input.files && input.files[0]) {
+
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+      $('.image-upload-wrap').hide();
+
+      $('.file-upload-image').attr('src', e.target.result);
+      $('.file-upload-content').show();
+
+      $('.image-title').html(input.files[0].name);
+    };
+
+    reader.readAsDataURL(input.files[0]);
+
+  } else {
+    removeUpload();
+  }
+}
+
+function removeUpload() {
+  $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+  $('.file-upload-content').hide();
+  $('.image-upload-wrap').show();
+}
+$('.image-upload-wrap').bind('dragover', function () {
+		$('.image-upload-wrap').addClass('image-dropping');
+	});
+	$('.image-upload-wrap').bind('dragleave', function () {
+		$('.image-upload-wrap').removeClass('image-dropping');
+});
+</script>
+<script type="text/javascript">
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "./my_model/";
+
+    let model, webcam, labelContainer, labelcontainer2, maxPredictions;
+
+    // Load the image model and setup the webcam
+    //async function init() {
+
+        
+
+    //}
+
+    // run the webcam image through the image model
+    async function predict() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // or files from your local hard drive
+        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        var audio = document.getElementById('audio_play'); 
+    if (audio.paused) { 
+        audio.play(); 
+    }else{ 
+        audio.pause(); 
+        audio.currentTime = 0 
+    } 
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement("div"));
+        }
+        labelContainer2 = document.getElementById("label-container2");
+            labelContainer2.appendChild(document.createElement("div"));
+        // predict can take in an image, video or canvas html element
+        let biggestv=0;
+        let biggestfn=0;
+        var image=document.getElementById("fruit_image")
+        const prediction = await model.predict(image,false);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            if(biggestv<prediction[i].probability.toFixed(2)){
+              biggestv=prediction[i].probability.toFixed(2);
+              biggestfn=prediction[i].className;
+            }
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+            if(biggestfn=='수박'){
+              labelContainer2.childNodes[0].innerHTML = '수박:관절 보호,눈 건강,수분 유지,피부 진정효과,근육통 예방 등의 효능이 있습니다.';}
+            if(biggestfn=='사과'){
+              labelContainer2.childNodes[0].innerHTML = '사과:다이어트,장 운동 개선,노화방지,혈압 강하,호흡기질환 예방 등의 효능이 있습니다.';}
+            if(biggestfn=='바나나'){
+              labelContainer2.childNodes[0].innerHTML = '바나나:소화 개선,다이어트,심혈관질환 예방,피부 건강 등의 효능이 있습니다.';}
+            if(biggestfn=='배'){
+              labelContainer2.childNodes[0].innerHTML = '배:호흡기질환 개선,숙취해소,소화개선,변비 개선,해열 등의 효능이 있습니다.';}
+            if(biggestfn=='오렌지'){
+              labelContainer2.childNodes[0].innerHTML = '오렌지:항암효과,면역력 강화,스트레스 해소,혈관건강 개선,숙취해소 등의 효능이 있습니다.';}
+            if(biggestfn=='블루베리'){
+              labelContainer2.childNodes[0].innerHTML = '블루베리:시력 저하 예방,노화 예방,기억력 증진,대장암 예방,비만 예방 등의 효능이 있습니다.';}
+            if(biggestfn=='멜론'){
+              labelContainer2.childNodes[0].innerHTML = '멜론:항암 작용,소염작용,면역력 증진,고혈압 예방,소화 작용 등의 효능이 있습니다.';}
+             if(biggestfn=='포도'){
+              labelContainer2.childNodes[0].innerHTML = '포도:빈혈 예방,암 예방,피로 회복,노화방지,치매 예방 등의 효능이 있습니다.';}
+            if(biggestfn=='참외'){
+              labelContainer2.childNodes[0].innerHTML = '참외:피로회복,암 예방,이뇨작용,콜레스테롤 강하,피부미용 등의 효능이 있습니다.';}
+            if(biggestfn=='토마토'){
+              labelContainer2.childNodes[0].innerHTML = '토마토:항암효과,동맥경화 예방,혈압 강하,소화개선,변비 예방 등의 효능이 있습니다.';}
+            if(biggestfn=='딸기'){
+              labelContainer2.childNodes[0].innerHTML = '딸기:면역력 증강, 피로 회복, 시각 기능 개선,다이어트,당뇨예방 등의 효능이 있습니다.';}
+            if(biggestfn=='파인애플'){
+              labelContainer2.childNodes[0].innerHTML = '파인애플:항암효과,혈압 강하,소화개선,다이어트 등의 효능이 있습니다.';}
+            if(biggestfn=='석류'){
+              labelContainer2.childNodes[0].innerHTML = '석류:임신 가능성 증가,모발 성장 촉진,소화개선,피부 미용 및 노화방지 등의 효능이 있습니다.';}
+            if(biggestfn=='키위'){
+              labelContainer2.childNodes[0].innerHTML = '키위:항암효과,피부 미용,소화개선,변비개선 등의 효능이 있습니다.';}
+            if(biggestfn=='체리'){
+              labelContainer2.childNodes[0].innerHTML = '체리:빈혈 예방,피부 미용,피로 해소,당뇨 예방 등의 효능이 있습니다.';}
+            if(biggestfn=='아보카도'){
+              labelContainer2.childNodes[0].innerHTML = '아보카도:영양소 풍부,다이어트,뇌 건강 향상,안구보호 등의 효능이 있습니다.';}
+        }
+
+    }
+</script>
+
+      <div class="buttons">
+        
+        
+      </div>
+</div>
+
+
+<div id="modal-container">
+	<div class="modal-background">
+		<div class="modal">
+
+          <span class="loader-icon"></span>
+          <!--span class="loader-text"></span--> 
+          <div id="label-container2"></div>
+
+		</div>
+	</div>
+</div>
+
+    <!--a href="#none" id="four" class="button"--><!--button>Blow Up</button></a-->
+        <div id="loadingText" class='showLoding'>
+        </div>
+    <script src="script.js"></script>
+    
+
+  </body>
+
+  <!--Copyright (c) 2021 by Aaron Vanston (https://codepen.io/aaronvanston/pen/yNYOXR)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.-->
+
+
+</html>
